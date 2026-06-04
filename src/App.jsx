@@ -662,16 +662,20 @@ export default function ICEALionBancaPortal() {
       </header>
 
       {/* ══ TITLE BAND ══ */}
-      <div style={{ background: "#003C7A", padding: "18px 36px" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "#27AAE1", marginBottom: 4, fontWeight: 600 }}>
+      <div style={{ background: "#003C7A", padding: "22px 36px" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 16 }}>
+          {/* Left: empty for balance */}
+          <div/>
+          {/* Centre: product name + page title */}
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", fontFamily: "Georgia, serif", letterSpacing: "0.01em" }}>
               Summit Endowment Plan
             </div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "Georgia, serif" }}>
-              Generate a Client Quotation
-            </h1>
+            <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#27AAE1", marginTop: 5, fontWeight: 600 }}>
+              Quotation Generator
+            </div>
           </div>
+          {/* Right: ref + date */}
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", marginBottom: 2, letterSpacing: "0.08em" }}>QUOTATION REF</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", fontFamily: "monospace" }}>{quoteRef}</div>
@@ -736,7 +740,7 @@ export default function ICEALionBancaPortal() {
             )}
 
             <div style={{ height: 1, background: "#e8eef4", margin: "4px 0 18px" }}/>
-            <SH>Life Assured</SH>
+            <SH>Life Assured Details</SH>
 
             <Field
               label="Age at Entry"
@@ -859,10 +863,10 @@ export default function ICEALionBancaPortal() {
                 {/* Policy strip */}
                 <div style={{ padding: "9px 22px", background: "#f7fafc", borderBottom: "1px solid #e8eef4", display: "flex", gap: 22, flexWrap: "wrap" }}>
                   {[
-                    ["Life Assured", `Age ${age} · ${gender === "M" ? "Male" : "Female"}`],
+                    ["Age",          `${age} years · ${gender === "M" ? "Male" : "Female"}`],
                     ["Policy Term",  `${term} Years`],
-                    ["Ref", quoteRef],
-                    ["Date", new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })],
+                    ["Ref",          quoteRef],
+                    ["Date",         new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <div style={{ fontSize: 9, letterSpacing: "0.09em", textTransform: "uppercase", color: "#a0aec0", fontWeight: 600 }}>{k}</div>
@@ -1017,22 +1021,7 @@ export default function ICEALionBancaPortal() {
                 </div>
               )}
 
-              {/* Spark metadata */}
-              {callMeta && (
-                <div style={{ background: "#fff", borderRadius: 9, border: "1px solid #e2e8f0", padding: "10px 16px", display: "flex", gap: 24, flexWrap: "wrap", marginTop: 14 }}>
-                  {[
-                    ["Engine",        `Coherent Spark ${callMeta.compiler_type}`],
-                    ["Process Time",  `${callMeta.process_time}ms`],
-                    ["Call ID",       `${callMeta.call_id?.substring(0,16)}…`],
-                    ["Version",       callMeta.version],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{ fontSize: 10, color: "#718096" }}>
-                      <span style={{ fontWeight: 700, color: "#a0aec0", textTransform: "uppercase", letterSpacing: "0.07em", marginRight: 5 }}>{k}</span>
-                      {v}
-                    </div>
-                  ))}
-                </div>
-              )}
+
             </div>
           )}
         </div>
@@ -1058,3 +1047,4 @@ export default function ICEALionBancaPortal() {
     </div>
   );
 }
+
