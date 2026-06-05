@@ -596,17 +596,18 @@ function PdfPreviewModal({ open, onClose, pdfUrl, quoteRef, clientName }) {
               fontSize:12,fontWeight:600,cursor:"pointer" }}>Close</button>
           </div>
         </div>
-        {/* PDF embed */}
+        {/* PDF embed - try Google Docs viewer as proxy first (bypasses X-Frame-Options) */}
         <div style={{ background:"#525659",borderRadius:"0 0 14px 14px",
           overflow:"hidden",minHeight:700 }}>
           {!embedFailed ? (
-            <object data={pdfUrl} type="application/pdf" width="100%" height="700px"
+            <iframe
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`}
+              title="Quotation PDF"
+              width="100%"
+              height="700px"
               style={{ display:"block",border:"none" }}
-              onError={()=>setEmbedFailed(true)}>
-              <embed src={pdfUrl} type="application/pdf" width="100%" height="700px"
-                style={{ display:"block",border:"none" }}
-                onError={()=>setEmbedFailed(true)}/>
-            </object>
+              onError={()=>setEmbedFailed(true)}
+            />
           ) : (
             <div style={{ display:"flex",flexDirection:"column",alignItems:"center",
               justifyContent:"center",height:500,gap:20,padding:"40px",textAlign:"center" }}>
@@ -964,7 +965,7 @@ export default function ICEALionBancaPortal() {
         <div style={{ display:"flex",alignItems:"center" }}>
           <IceaLionLogo height={38}/>
         </div>
-        {/* Centre: status + toggle + portal */}
+        {/* Centre: Engine Live → Portal badge → KES toggle */}
         <div style={{ display:"flex",alignItems:"center",gap:14,justifyContent:"center" }}>
           {valLoading
             ? <div style={{ display:"flex",alignItems:"center",gap:7,fontSize:11,color:"#a0aec0" }}>
@@ -977,7 +978,13 @@ export default function ICEALionBancaPortal() {
               </div>
             )
           }
-          {/* KES toggle - clear label showing current state */}
+          <div style={{ background:bankConfig.color==="#003C7A"?"#eef4fb":`${bankConfig.color}15`,
+            border:`1px solid ${bankConfig.color}40`,
+            borderRadius:6,padding:"5px 12px",fontSize:11,fontWeight:700,
+            color:bankConfig.color,letterSpacing:"0.07em",textTransform:"uppercase" }}>
+            {bankConfig.tagline}
+          </div>
+          {/* KES toggle */}
           <button onClick={()=>setCompact(c=>!c)} style={{
             padding:"5px 11px",fontSize:10,fontWeight:700,
             background:compact?"#003C7A":"#f7fafc",
@@ -986,16 +993,10 @@ export default function ICEALionBancaPortal() {
             letterSpacing:"0.06em",textTransform:"uppercase",
             display:"flex",alignItems:"center",gap:5 }}>
             {compact
-              ? <><span>KES Mn</span><span style={{ opacity:0.6,fontSize:9 }}>· showing</span></>
+              ? <><span>KES Mn</span><span style={{ opacity:0.6,fontSize:9 }}>· on</span></>
               : <><span>KES Mn</span><span style={{ opacity:0.6,fontSize:9 }}>· off</span></>
             }
           </button>
-          <div style={{ background:bankConfig.color==="#003C7A"?"#eef4fb":`${bankConfig.color}15`,
-            border:`1px solid ${bankConfig.color}40`,
-            borderRadius:6,padding:"5px 12px",fontSize:11,fontWeight:700,
-            color:bankConfig.color,letterSpacing:"0.07em",textTransform:"uppercase" }}>
-            {bankConfig.tagline}
-          </div>
         </div>
         {/* Right: Powered by Coherent — swap with <img src="/coherent_logo.png" style={{height:22}}/> */}
         <div style={{ display:"flex",alignItems:"center",gap:8,justifyContent:"flex-end" }}>
@@ -1007,28 +1008,28 @@ export default function ICEALionBancaPortal() {
       </header>
 
       {/* ══ TITLE BAND ══ */}
-      <div className="no-print" style={{ background:"#003C7A",padding:"28px 36px 20px" }}>
+      <div className="no-print" style={{ background:"#003C7A",padding:"14px 36px 12px" }}>
         <div style={{ maxWidth:1120,margin:"0 auto" }}>
           <div style={{ display:"grid",gridTemplateColumns:"1fr auto 1fr",
-            alignItems:"center",gap:16,marginBottom:10 }}>
+            alignItems:"center",gap:16,marginBottom:6 }}>
             <div/>
             <div style={{ textAlign:"center" }}>
-              <div style={{ fontSize:22,fontWeight:700,color:"#fff",
+              <div style={{ fontSize:17,fontWeight:700,color:"#fff",
                 fontFamily:"Georgia,serif",letterSpacing:"0.01em" }}>
                 Summit Endowment Plan
               </div>
-              <div style={{ fontSize:11,letterSpacing:"0.18em",textTransform:"uppercase",
-                color:"#27AAE1",marginTop:5,fontWeight:600 }}>
+              <div style={{ fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",
+                color:"#27AAE1",marginTop:3,fontWeight:600 }}>
                 Quotation Generator
               </div>
             </div>
             <div style={{ textAlign:"right" }}>
               {quoteRef && (
                 <>
-                  <div style={{ fontSize:9,color:"rgba(255,255,255,0.4)",letterSpacing:"0.08em",marginBottom:2 }}>
+                  <div style={{ fontSize:9,color:"rgba(255,255,255,0.4)",letterSpacing:"0.08em",marginBottom:1 }}>
                     QUOTATION REF
                   </div>
-                  <div style={{ fontSize:12,fontWeight:700,color:"rgba(255,255,255,0.75)",fontFamily:"monospace" }}>
+                  <div style={{ fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.75)",fontFamily:"monospace" }}>
                     {quoteRef}
                   </div>
                 </>
@@ -1038,8 +1039,8 @@ export default function ICEALionBancaPortal() {
           {modelVersion && (
             <div style={{ display:"flex",justifyContent:"flex-start" }}>
               <div style={{ background:"rgba(255,255,255,0.08)",border:"1px solid rgba(39,170,225,0.25)",
-                borderRadius:5,padding:"3px 10px",fontSize:10,fontWeight:600,
-                color:"rgba(255,255,255,0.5)",letterSpacing:"0.06em" }}>
+                borderRadius:5,padding:"2px 9px",fontSize:9,fontWeight:600,
+                color:"rgba(255,255,255,0.45)",letterSpacing:"0.06em" }}>
                 Spark · Banca Endowment Quote Generator · v{modelVersion}
               </div>
             </div>
@@ -1285,6 +1286,18 @@ export default function ICEALionBancaPortal() {
                     <StatBox label="Maturity Growth"
                       value={growthPct!=null?`+${growthPct}%`:"—"}
                       sub="vs total premiums paid" teal/>
+                  </div>
+
+                  {/* Year-by-year maturity projection placeholder */}
+                  <div style={{ background:"#fffbeb",border:"1px solid #f6e05e",
+                    borderRadius:8,padding:"12px 16px",marginBottom:4 }}>
+                    <div style={{ fontSize:11,fontWeight:700,color:"#744210",marginBottom:4 }}>
+                      Year-by-year maturity projection
+                    </div>
+                    <div style={{ fontSize:11,color:"#92400e",lineHeight:1.6 }}>
+                      End-of-term estimate: <strong>KES {fmt(maturityEst)}</strong>.
+                      Annual year-by-year figures require additional model outputs — pending actuary update.
+                    </div>
                   </div>
                 </div>
               </div>
