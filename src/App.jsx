@@ -1306,14 +1306,12 @@ export default function ICEALionBancaPortal() {
         <div className="no-print" style={{ background:"#fff",borderRadius:13,
           border:"1px solid #e2e8f0",overflow:"hidden",
           boxShadow:"0 1px 4px rgba(0,0,0,0.05)" }}>
-          <div style={{ padding:"18px 22px 16px",borderBottom:"1px solid #e8eef4",
+          <div style={{ padding:"18px 80px 16px",borderBottom:"1px solid #e8eef4",
             position:"relative",textAlign:"center" }}>
-            <div style={{ fontSize:14,fontWeight:700,color:"#1a202c",marginBottom:4,
-              paddingRight:70 }}>
+            <div style={{ fontSize:14,fontWeight:700,color:"#1a202c",marginBottom:4 }}>
               Policy Inputs
             </div>
-            <div style={{ fontSize:12,color:"#718096",lineHeight:1.5,
-              paddingRight:70 }}>
+            <div style={{ fontSize:12,color:"#718096",lineHeight:1.5 }}>
               All fields required to generate a quotation.
             </div>
             {(result||clientName||age) && (
@@ -1616,8 +1614,10 @@ export default function ICEALionBancaPortal() {
       </div>
 
       {/* ══ FOOTER ══ */}
-      <footer className="no-print" style={{ maxWidth:1120,margin:"24px auto 0",
-        padding:"14px 36px",borderTop:"1px solid #e2e8f0",
+      <footer className="no-print" style={{
+        background:"#fff",
+        borderTop:"1px solid #e2e8f0",
+        padding:"14px 36px",
         display:"flex",justifyContent:"space-between",alignItems:"center",
         fontSize:11,color:"#a0aec0" }}>
         <span>© 2026 ICEA LION Life Assurance Company Limited - For authorised bank partners only</span>
@@ -1633,18 +1633,17 @@ export default function ICEALionBancaPortal() {
             <span style={{ fontSize:9,letterSpacing:"0.08em",textTransform:"uppercase" }}>Powered by</span>
             <img src="/coherent_logo.png" alt="Coherent" style={{ height:16,objectFit:"contain" }}/>
           </div>
-          {/* API Logs - persistent bottom right */}
+          {/* API Logs - prominent button */}
           <button onClick={()=>setPage("history")} style={{
-            display:"flex",alignItems:"center",gap:6,
-            padding:"5px 12px",
-            background:"#f7fafc",color:"#718096",
-            border:"1px solid #e2e8f0",borderRadius:6,
-            fontSize:10,fontWeight:600,cursor:"pointer",
-            letterSpacing:"0.04em",textTransform:"uppercase",
+            display:"flex",alignItems:"center",gap:7,
+            padding:"8px 16px",
+            background:ICEA_NAVY,color:"#fff",
+            border:"none",borderRadius:7,
+            fontSize:11,fontWeight:700,cursor:"pointer",
+            letterSpacing:"0.05em",textTransform:"uppercase",
             fontFamily:"inherit",
-            borderLeft:"2px solid #27AAE1",
           }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
