@@ -582,18 +582,84 @@ function CallHistoryPage({ onBack, bankName }) {
       correlation_id:"20260605-Grace-0003", process_time:62, version:"0.3.0", error:null },
   ];
 
+  // Parse CSV text into row objects
+  function parseCSV(text) {
+    const lines = text.trim().split("\n");
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(",").map(h=>h.replace(/^"|"$/g,"").trim().toLowerCase().replace(/\s+/g,"_"));
+    return lines.slice(1).map(line=>{
+      // Handle quoted fields with commas inside
+      const values = []; let cur="", inQ=false;
+      for (let i=0; i<line.length; i++) {
+        if (line[i]==='"') { inQ=!inQ; }
+        else if (line[i]==="," && !inQ) { values.push(cur); cur=""; }
+        else { cur+=line[i]; }
+      }
+      values.push(cur);
+      const obj={};
+      headers.forEach((h,i)=>{ obj[h]=values[i]||""; });
+      // Normalise key field names to match what the table expects
+      return {
+        call_id:         obj.call_id||obj.callid||"",
+        request_timestamp: obj.request_timestamp||obj.timestamp||obj.date||"",
+        call_purpose:    obj.call_purpose||obj.callpurpose||"",
+        source_system:   obj.source_system||obj.sourcesystem||"",
+        correlation_id:  obj.correlation_id||obj.correlationid||"",
+        process_time:    obj.process_time||obj.processtime||"",
+        version:         obj.version||"",
+        error:           obj.error||obj.errors||null,
+      };
+    }).filter(r=>r.call_id||r.call_purpose);
+  }
+
   useEffect(()=>{
     (async()=>{
       setLoading(true);
       try {
-        const res = await fetch(`${LOG_URL}?max=100`, { headers: HEADERS });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const items = data?.response_data?.calls
-          || data?.calls || data?.data || data?.logs || [];
-        setCalls(Array.isArray(items) && items.length > 0 ? items : SAMPLE_CALLS);
-      } catch {
-        // Permissions issue - show sample data with a note rather than error
+        // Step 1: POST to start the async CSV export job
+        const jobRes = await fetch(LOG_CSV_URL, {
+          method:"POST", headers: HEADERS,
+          body: JSON.stringify({
+            request_data: { start_date:"2026-01-01", end_date:"" },
+            request_meta: {}
+          })
+        });
+        if (!jobRes.ok) throw new Error(`HTTP ${jobRes.status}`);
+        const jobData = await jobRes.json();
+        const jobId = jobData?.response_data?.job_id || jobData?.job_id;
+        if (!jobId) throw new Error("No job_id returned");
+
+        // Step 2: Poll for completion and download_url
+        let downloadUrl = null;
+        for (let i=0; i<15; i++) {
+          await new Promise(r=>setTimeout(r,2000));
+          const statusRes = await fetch(
+            `${LOG_CSV_URL}/status/${jobId}`,
+            { headers: HEADERS }
+          );
+          const statusData = await statusRes.json();
+          const url = statusData?.response_data?.download_url || statusData?.download_url;
+          if (url) { downloadUrl=url; break; }
+        }
+        if (!downloadUrl) throw new Error("Timed out waiting for download URL");
+
+        // Step 3: Fetch ZIP, extract CSV, parse rows
+        // ZIP contains CSV files - fetch and try to parse as text directly first
+        // (some environments return CSV directly rather than ZIP)
+        const fileRes = await fetch(downloadUrl);
+        const text = await fileRes.text();
+
+        // Try parsing as CSV directly
+        const rows = parseCSV(text);
+        if (rows.length > 0) {
+          setCalls(rows);
+        } else {
+          // If ZIP binary, we can't parse client-side without JSZip - fall back to sample + note
+          setCalls(SAMPLE_CALLS);
+          setError("sample");
+        }
+      } catch(e) {
+        // Any failure - show sample data with amber note
         setCalls(SAMPLE_CALLS);
         setError("sample");
       } finally {
@@ -615,53 +681,40 @@ function CallHistoryPage({ onBack, bankName }) {
     return matchText && matchPurpose;
   });
 
-  // Download as CSV (client-side from fetched data)
+  // Download CSV - triggers the same job but opens the ZIP download URL directly
   async function handleDownloadCSV() {
     setDownloading(true);
     try {
-      const res = await fetch(`${LOG_CSV_URL}`, { method:"POST", headers: HEADERS,
-        body: JSON.stringify({ request_data:{}, request_meta:{} }) });
-      const data = await res.json();
-      const jobId = data?.job_id || data?.response_data?.job_id;
-      if (jobId) {
-        // Poll for status
-        let attempts = 0;
-        while (attempts < 10) {
-          await new Promise(r=>setTimeout(r,2000));
-          const statusRes = await fetch(`${LOG_CSV_URL}/status/${jobId}`, { headers: HEADERS });
-          const statusData = await statusRes.json();
-          const url = statusData?.download_url || statusData?.response_data?.download_url;
-          if (url) { window.open(url,"_blank"); break; }
-          attempts++;
-        }
-      } else {
-        // Fallback: generate CSV from in-memory data
-        const headers = ["Timestamp","Call ID","Call Purpose","Source System","Correlation ID","Process Time (ms)","Version","Status"];
-        const rows = filtered.map(c=>[
-          c.request_timestamp||"",
-          c.call_id||"",
-          c.call_purpose||"",
-          c.source_system||"",
-          c.correlation_id||"",
-          c.process_time||"",
-          c.version||"",
-          c.error?"Error":"Success",
-        ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","));
-        const csv = [headers.join(","),...rows].join("\n");
-        const blob = new Blob([csv],{type:"text/csv"});
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement("a");
-        a.href=url; a.download=`ICEA_LION_CallHistory_${new Date().toISOString().split("T")[0]}.csv`;
-        a.click(); URL.revokeObjectURL(url);
+      const jobRes = await fetch(LOG_CSV_URL, {
+        method:"POST", headers: HEADERS,
+        body: JSON.stringify({ request_data:{ start_date:"2026-01-01", end_date:"" }, request_meta:{} })
+      });
+      const jobData = await jobRes.json();
+      const jobId = jobData?.response_data?.job_id || jobData?.job_id;
+      if (!jobId) throw new Error("No job_id");
+
+      for (let i=0; i<15; i++) {
+        await new Promise(r=>setTimeout(r,2000));
+        const st = await fetch(`${LOG_CSV_URL}/status/${jobId}`,{headers:HEADERS});
+        const sd = await st.json();
+        const url = sd?.response_data?.download_url||sd?.download_url;
+        if (url) { window.open(url,"_blank"); setDownloading(false); return; }
       }
-    } catch(e) {
-      // Fallback CSV from memory
-      const headers = ["Timestamp","Call ID","Call Purpose","Source System","Correlation ID","Process Time (ms)"];
-      const rows = filtered.map(c=>[c.request_timestamp||"",c.call_id||"",c.call_purpose||"",c.source_system||"",c.correlation_id||"",c.process_time||""].map(v=>`"${v}"`).join(","));
-      const csv = [headers.join(","),...rows].join("\n");
+      throw new Error("Timed out");
+    } catch {
+      // Fallback: generate CSV from whatever data we have in memory
+      const hdrs = ["Timestamp","Call ID","Call Purpose","Source System","Correlation ID","Process Time (ms)","Version","Status"];
+      const rows = filtered.map(c=>[
+        c.request_timestamp||"", c.call_id||"", c.call_purpose||"",
+        c.source_system||"", c.correlation_id||"", c.process_time||"",
+        c.version||"", c.error?"Error":"Success",
+      ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","));
+      const csv  = [hdrs.join(","),...rows].join("\n");
       const blob = new Blob([csv],{type:"text/csv"});
-      const url  = URL.createObjectURL(blob); const a=document.createElement("a");
-      a.href=url; a.download=`ICEA_LION_CallHistory.csv`; a.click(); URL.revokeObjectURL(url);
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href=url; a.download=`ICEA_LION_CallHistory_${new Date().toISOString().split("T")[0]}.csv`;
+      a.click(); URL.revokeObjectURL(url);
     } finally { setDownloading(false); }
   }
 
