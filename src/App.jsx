@@ -586,30 +586,38 @@ function CallHistoryPage({ onBack, bankName }) {
   function parseCSV(text) {
     const lines = text.trim().split("\n");
     if (lines.length < 2) return [];
-    const headers = lines[0].split(",").map(h=>h.replace(/^"|"$/g,"").trim().toLowerCase().replace(/\s+/g,"_"));
+    // Normalise header names - strip quotes, lowercase, replace spaces with underscores
+    const headers = lines[0].split(",").map(h=>
+      h.replace(/^"|"$/g,"").trim().toLowerCase().replace(/[\s\-\/]+/g,"_")
+    );
+    // Log actual headers to console so we can see what Spark returns
+    console.log("Spark CSV headers:", headers);
     return lines.slice(1).map(line=>{
-      // Handle quoted fields with commas inside
       const values = []; let cur="", inQ=false;
       for (let i=0; i<line.length; i++) {
         if (line[i]==='"') { inQ=!inQ; }
-        else if (line[i]==="," && !inQ) { values.push(cur); cur=""; }
+        else if (line[i]==="," && !inQ) { values.push(cur.replace(/^"|"$/g,"")); cur=""; }
         else { cur+=line[i]; }
       }
-      values.push(cur);
+      values.push(cur.replace(/^"|"$/g,""));
       const obj={};
       headers.forEach((h,i)=>{ obj[h]=values[i]||""; });
-      // Normalise key field names to match what the table expects
+      const get = (...keys) => { for (const k of keys) if (obj[k]) return obj[k]; return ""; };
       return {
-        call_id:         obj.call_id||obj.callid||"",
-        request_timestamp: obj.request_timestamp||obj.timestamp||obj.date||"",
-        call_purpose:    obj.call_purpose||obj.callpurpose||"",
-        source_system:   obj.source_system||obj.sourcesystem||"",
-        correlation_id:  obj.correlation_id||obj.correlationid||"",
-        process_time:    obj.process_time||obj.processtime||"",
-        version:         obj.version||"",
-        error:           obj.error||obj.errors||null,
+        call_id:           get("call_id","callid","id","execution_id"),
+        request_timestamp: get("log_time","logtime","request_timestamp","timestamp","date","call_date","created_at","time"),
+        call_purpose:      get("call_purpose","callpurpose","purpose","call_type"),
+        source_system:     get("source_system","sourcesystem","source","client","caller"),
+        correlation_id:    get("correlation_id","correlationid","reference","ref","correlation"),
+        process_time:      get("calc_time_(ms)","total_time_(ms)","calc_time_ms","total_time_ms","process_time","processtime","duration","duration_ms","execution_time","response_time","time_ms","elapsed"),
+        version:           get("version","model_version","service_version","ver"),
+        compiler_type:     get("compiler_type","compiler","compiler_version"),
+        service_id:        get("service_id","serviceid"),
+        version_id:        get("version_id","versionid"),
+        engine_id:         get("engine_id","engineid"),
+        error:             get("error_details","error","errors","error_message")||null,
       };
-    }).filter(r=>r.call_id||r.call_purpose);
+    }).filter(r=>r.call_id||r.call_purpose||r.correlation_id);
   }
 
   useEffect(()=>{
@@ -643,18 +651,32 @@ function CallHistoryPage({ onBack, bankName }) {
         }
         if (!downloadUrl) throw new Error("Timed out waiting for download URL");
 
-        // Step 3: Fetch ZIP, extract CSV, parse rows
-        // ZIP contains CSV files - fetch and try to parse as text directly first
-        // (some environments return CSV directly rather than ZIP)
-        const fileRes = await fetch(downloadUrl);
-        const text = await fileRes.text();
+        // Step 3: Load JSZip dynamically, fetch ZIP, extract first CSV file
+        const JSZip = (await import("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js")).default
+          || window.JSZip;
 
-        // Try parsing as CSV directly
-        const rows = parseCSV(text);
-        if (rows.length > 0) {
-          setCalls(rows);
+        const zipRes  = await fetch(downloadUrl);
+        const zipBuf  = await zipRes.arrayBuffer();
+        const zip     = await JSZip.loadAsync(zipBuf);
+
+        // Find first CSV file in the ZIP
+        let csvText = null;
+        for (const [name, file] of Object.entries(zip.files)) {
+          if (name.endsWith(".csv") && !file.dir) {
+            csvText = await file.async("string");
+            break;
+          }
+        }
+
+        if (csvText) {
+          const rows = parseCSV(csvText);
+          if (rows.length > 0) {
+            setCalls(rows);
+          } else {
+            setCalls(SAMPLE_CALLS);
+            setError("sample");
+          }
         } else {
-          // If ZIP binary, we can't parse client-side without JSZip - fall back to sample + note
           setCalls(SAMPLE_CALLS);
           setError("sample");
         }
@@ -713,7 +735,7 @@ function CallHistoryPage({ onBack, bankName }) {
       const blob = new Blob([csv],{type:"text/csv"});
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement("a");
-      a.href=url; a.download=`ICEA_LION_CallHistory_${new Date().toISOString().split("T")[0]}.csv`;
+      a.href=url; a.download=`ICEA_Calls_${new Date().toISOString().split("T")[0]}.csv`;
       a.click(); URL.revokeObjectURL(url);
     } finally { setDownloading(false); }
   }
@@ -730,11 +752,11 @@ function CallHistoryPage({ onBack, bankName }) {
 
       {/* Header */}
       <header style={{ background:"#fff",borderBottom:"1px solid #e2e8f0",
-        padding:"0 36px",height:66,display:"grid",gridTemplateColumns:"1fr auto 1fr",
+        padding:"0 36px",height:96,display:"grid",gridTemplateColumns:"1fr auto 1fr",
         alignItems:"center",position:"sticky",top:0,zIndex:100,
         boxShadow:"0 1px 4px rgba(0,0,0,0.06)" }}>
         <div style={{ display:"flex",alignItems:"center" }}>
-          <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:38,objectFit:"contain" }}/>
+          <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:52,objectFit:"contain" }}/>
         </div>
         <div style={{ display:"flex",alignItems:"center",gap:10 }}>
           <div style={{ background:"#eef4fb",border:`1px solid ${ICEA_TEAL}40`,
@@ -752,12 +774,12 @@ function CallHistoryPage({ onBack, bankName }) {
       </header>
 
       {/* Title band */}
-      <div style={{ background:ICEA_NAVY,padding:"14px 36px 12px" }}>
+      <div style={{ background:ICEA_NAVY,padding:"24px 36px 22px" }}>
         <div style={{ maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
           <div>
-            <div style={{ fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",
-              color:ICEA_TEAL,marginBottom:3,fontWeight:600 }}>Coherent Spark</div>
-            <div style={{ fontSize:16,fontWeight:700,color:"#fff" }}>
+            <div style={{ fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",
+              color:ICEA_TEAL,marginBottom:6,fontWeight:600 }}>Coherent Spark</div>
+            <div style={{ fontSize:22,fontWeight:700,color:"#fff" }}>
               Quotation API Call History
             </div>
           </div>
@@ -865,14 +887,15 @@ function CallHistoryPage({ onBack, bankName }) {
 
           {!loading && !error && filtered.length>0 && (
             <div style={{ overflowX:"auto" }}>
-              {/* Table header */}
+              {/* Table header - added Version + Log Time */}
               <div style={{ display:"grid",
-                gridTemplateColumns:"160px 1fr 1fr 1fr 80px 70px 40px",
+                gridTemplateColumns:"160px 140px 1fr 1fr 1fr 80px 70px 40px",
                 padding:"10px 20px",background:"#f7fafc",
                 borderBottom:"1px solid #e2e8f0",fontSize:10,
                 fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",
                 color:"#718096",gap:12 }}>
-                <div>Timestamp</div>
+                <div>Log Time</div>
+                <div>Version</div>
                 <div>Call Purpose</div>
                 <div>Correlation ID (Ref)</div>
                 <div>Source System</div>
@@ -886,27 +909,37 @@ function CallHistoryPage({ onBack, bankName }) {
                 return (
                   <div key={c.call_id||i}>
                     <div style={{ display:"grid",
-                      gridTemplateColumns:"160px 1fr 1fr 1fr 80px 70px 40px",
+                      gridTemplateColumns:"160px 140px 1fr 1fr 1fr 80px 70px 40px",
                       padding:"12px 20px",borderBottom:"1px solid #f0f0f0",
                       fontSize:12,color:"#2d3748",gap:12,alignItems:"center",
                       background:i%2===0?"#fff":"#fafafa",
                       cursor:"pointer",transition:"background 0.1s" }}
                       onClick={()=>setExpandedRow(expanded?null:i)}>
+                      {/* Log Time */}
                       <div style={{ fontSize:11,color:"#718096" }}>
-                        {fmtDateTime(c.request_timestamp)}
+                        {fmtDateTime(c.request_timestamp)||"-"}
                       </div>
+                      {/* Version */}
+                      <div style={{ fontSize:11,fontWeight:600,color:ICEA_NAVY }}>
+                        {c.version ? `v${c.version}` : "-"}
+                      </div>
+                      {/* Call Purpose */}
                       <div style={{ fontWeight:600,fontSize:11 }}>
                         {c.call_purpose||"-"}
                       </div>
+                      {/* Correlation ID */}
                       <div style={{ fontSize:11,fontFamily:"monospace",color:ICEA_NAVY }}>
                         {c.correlation_id||"-"}
                       </div>
+                      {/* Source System */}
                       <div style={{ fontSize:11,color:"#4a5568" }}>
                         {c.source_system||"-"}
                       </div>
+                      {/* Process Time */}
                       <div style={{ fontSize:12,fontWeight:600 }}>
-                        {c.process_time!=null?`${c.process_time}ms`:"-"}
+                        {c.process_time && c.process_time!=="0" ? `${c.process_time}ms` : "-"}
                       </div>
+                      {/* Status */}
                       <div>
                         <span style={{ display:"inline-flex",alignItems:"center",gap:5,
                           background:st.bg,borderRadius:5,padding:"3px 8px",
