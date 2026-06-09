@@ -19,29 +19,35 @@ const HEADERS     = { "Content-Type":"application/json","x-synthetic-key":SPARK.
 
 // ─── BANK PARTNER CONFIG (URL param ?bank=crdb) ───────────────────────────────
 const BANK_CONFIG = {
-  crdb: {
-    name:      "CRDB Bank Tanzania",
-    shortName: "CRDB",
-    tagline:   "CRDB Bank · Bancassurance Portal",
-    logo:      "/crdb_logo.png",
+  equity: {
+    name:      "Equity Bank Kenya",
+    shortName: "Equity Bank",
+    tagline:   "Equity Bank · Bancassurance Portal",
+    logo:      "/equity_logo.png",
   },
-  nmb: {
-    name:      "NMB Bank Tanzania",
-    shortName: "NMB",
-    tagline:   "NMB Bank · Bancassurance Portal",
-    logo:      null,
+  kcb: {
+    name:      "KCB Bank Kenya",
+    shortName: "KCB",
+    tagline:   "KCB Bank · Bancassurance Portal",
+    logo:      null, // set to "/kcb_logo.png" when available
   },
-  stanbic: {
-    name:      "Stanbic Bank Tanzania",
+  cooperative: {
+    name:      "Cooperative Bank of Kenya",
+    shortName: "Co-op Bank",
+    tagline:   "Co-op Bank · Bancassurance Portal",
+    logo:      null, // set to "/coop_logo.png" when available
+  },
+  stanbic_ug: {
+    name:      "Stanbic Bank Uganda",
     shortName: "Stanbic",
     tagline:   "Stanbic Bank · Bancassurance Portal",
-    logo:      null,
+    logo:      null, // set to "/stanbic_logo.png" when available
   },
   default: {
-    name:      "CRDB Bank Tanzania",
-    shortName: "CRDB",
-    tagline:   "CRDB Bank · Bancassurance Portal",
-    logo:      "/crdb_logo.png",
+    name:      "Equity Bank Kenya",
+    shortName: "Equity Bank",
+    tagline:   "Equity Bank · Bancassurance Portal",
+    logo:      "/equity_logo.png",
   },
 };
 function getBankConfig() {
@@ -566,19 +572,19 @@ function CallHistoryPage({ onBack, bankName }) {
 
   const SAMPLE_CALLS = [
     { call_id:"cf836931-e95c-418d-9d88-cad2065018fb", request_timestamp:"2026-06-05T08:42:40Z",
-      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - CRDB Bank Tanzania",
+      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
       correlation_id:"20260605-Amara-0001", process_time:49, version:"0.3.0", error:null },
     { call_id:"d739564c-3f19-4494-97c8-9fe2e9be4b51", request_timestamp:"2026-06-05T08:43:12Z",
-      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - CRDB Bank Tanzania",
+      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
       correlation_id:"20260605-Amara-0001", process_time:317, version:"0.3.0", error:null },
     { call_id:"b0b8650a-0488-4e87-aa34-78d3e0090ea5", request_timestamp:"2026-06-05T09:11:05Z",
-      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - CRDB Bank Tanzania",
+      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
       correlation_id:"20260605-David-0002", process_time:126, version:"0.3.0", error:null },
     { call_id:"469c3e42-6516-4b02-baf8-61233fa8cd19", request_timestamp:"2026-06-05T09:14:38Z",
-      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - CRDB Bank Tanzania",
+      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
       correlation_id:"20260605-David-0002", process_time:294, version:"0.3.0", error:null },
     { call_id:"7a3f9c12-1234-4567-abcd-ef0123456789", request_timestamp:"2026-06-05T10:02:17Z",
-      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - CRDB Bank Tanzania",
+      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
       correlation_id:"20260605-Grace-0003", process_time:62, version:"0.3.0", error:null },
   ];
 
@@ -995,6 +1001,7 @@ function CallHistoryPage({ onBack, bankName }) {
         <div style={{ marginTop:14,fontSize:11,color:"#a0aec0",textAlign:"center",lineHeight:1.6 }}>
           Showing API calls from Coherent Spark tenant: <strong style={{ color:"#4a5568" }}>icea_lion</strong>
           {" "} - Service: <strong style={{ color:"#4a5568" }}>ICEA LION - Banco Endowment Modelling</strong>
+          {" "} - Market: <strong style={{ color:"#4a5568" }}>Kenya / Uganda</strong>
         </div>
       </div>
     </div>
@@ -1287,7 +1294,7 @@ export default function ICEALionBancaPortal() {
         padding:"0 36px",height:96,display:"grid",gridTemplateColumns:"1fr auto 1fr",
         alignItems:"center",position:"sticky",top:0,zIndex:100,
         boxShadow:"0 1px 4px rgba(0,0,0,0.06)" }}>
-        {/* Left: ICEA Lion + CRDB logo */}
+        {/* Left: ICEA Lion + Bank Partner logo */}
         <div style={{ display:"flex",alignItems:"center",gap:16 }}>
           <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:52,objectFit:"contain" }}/>
           {bankConfig.logo && (
