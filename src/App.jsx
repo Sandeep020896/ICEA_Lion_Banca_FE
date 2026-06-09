@@ -758,11 +758,11 @@ function CallHistoryPage({ onBack, bankName }) {
 
       {/* Header */}
       <header style={{ background:"#fff",borderBottom:"1px solid #e2e8f0",
-        padding:"0 36px",height:96,display:"grid",gridTemplateColumns:"1fr auto 1fr",
+        padding:"0 36px",height:110,display:"grid",gridTemplateColumns:"1fr auto 1fr",
         alignItems:"center",position:"sticky",top:0,zIndex:100,
         boxShadow:"0 1px 4px rgba(0,0,0,0.06)" }}>
         <div style={{ display:"flex",alignItems:"center" }}>
-          <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:52,objectFit:"contain" }}/>
+          <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:62,objectFit:"contain" }}/>
         </div>
         <div style={{ display:"flex",alignItems:"center",gap:10 }}>
           <div style={{ background:"#eef4fb",border:`1px solid ${ICEA_TEAL}40`,
@@ -1291,17 +1291,17 @@ export default function ICEALionBancaPortal() {
 
       {/* ══ HEADER ══ */}
       <header className="no-print" style={{ background:"#fff",borderBottom:"1px solid #e2e8f0",
-        padding:"0 36px",height:96,display:"grid",gridTemplateColumns:"1fr auto 1fr",
+        padding:"0 36px",height:110,display:"grid",gridTemplateColumns:"1fr auto 1fr",
         alignItems:"center",position:"sticky",top:0,zIndex:100,
         boxShadow:"0 1px 4px rgba(0,0,0,0.06)" }}>
         {/* Left: ICEA Lion + Bank Partner logo */}
-        <div style={{ display:"flex",alignItems:"center",gap:16 }}>
-          <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:52,objectFit:"contain" }}/>
+        <div style={{ display:"flex",alignItems:"center",gap:18 }}>
+          <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:62,objectFit:"contain" }}/>
           {bankConfig.logo && (
             <>
-              <div style={{ width:1,height:44,background:"#e2e8f0" }}/>
+              <div style={{ width:1,height:52,background:"#e2e8f0" }}/>
               <img src={bankConfig.logo} alt={bankConfig.shortName}
-                style={{ height:44,objectFit:"contain" }}/>
+                style={{ height:52,objectFit:"contain" }}/>
             </>
           )}
         </div>
