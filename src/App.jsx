@@ -721,12 +721,30 @@ function CallHistoryPage({ onBack, bankName }) {
       const jobId = jobData?.response_data?.job_id || jobData?.job_id;
       if (!jobId) throw new Error("No job_id");
 
+      const shortDate = new Date().toISOString().split("T")[0];
       for (let i=0; i<15; i++) {
         await new Promise(r=>setTimeout(r,2000));
         const st = await fetch(`${LOG_CSV_URL}/status/${jobId}`,{headers:HEADERS});
         const sd = await st.json();
         const url = sd?.response_data?.download_url||sd?.download_url;
-        if (url) { window.open(url,"_blank"); setDownloading(false); return; }
+        if (url) {
+          // Fetch the ZIP and re-download with a short filename to avoid Windows MAX_PATH error
+          try {
+            const zipRes = await fetch(url);
+            const blob   = await zipRes.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = `ICEA_Calls_${shortDate}.zip`;
+            a.click();
+            URL.revokeObjectURL(blobUrl);
+          } catch {
+            // Last resort - open in new tab
+            window.open(url, "_blank");
+          }
+          setDownloading(false);
+          return;
+        }
       }
       throw new Error("Timed out");
     } catch {
