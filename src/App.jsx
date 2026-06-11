@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 // ─── SPARK CONFIG ─────────────────────────────────────────────────────────────
 const SPARK = {
@@ -60,6 +61,7 @@ function getBankConfig() {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const PASSWORD        = "Coherent!";
+const DEMO_EXPIRY     = new Date("2026-06-25"); // Demo expires 25 June 2026 - update to extend
 const IDLE_MS         = 30 * 60 * 1000;
 const WARN_MS         = 2  * 60 * 1000;
 const VALIDITY_DAYS   = 90;
@@ -236,6 +238,59 @@ function StatBox({ label, value, sub, accent, teal, tooltip }) {
       </div>
       {sub && <div style={{ fontSize:11,
         color:accent?"rgba(255,255,255,0.45)":teal?"#2a9d9d":"#a0aec0",marginTop:3 }}>{sub}</div>}
+    </div>
+  );
+}
+
+// ─── EXPIRED SCREEN ───────────────────────────────────────────────────────────
+function ExpiredScreen() {
+  return (
+    <div style={{ minHeight:"100vh",
+      background:`linear-gradient(160deg,#001f3f 0%,${ICEA_NAVY} 60%,#0057a8 100%)`,
+      display:"flex",alignItems:"center",justifyContent:"center",
+      fontFamily:"'Montserrat','Segoe UI',sans-serif" }}>
+      <div style={{ background:"#fff",borderRadius:18,padding:"48px 44px 40px",
+        width:440,boxShadow:"0 32px 100px rgba(0,0,0,0.35)",textAlign:"center" }}>
+        <div style={{ display:"flex",justifyContent:"center",marginBottom:6 }}>
+          <img src="/icea_lion_logo.png" alt="ICEA LION"
+            style={{ height:52,objectFit:"contain" }}/>
+        </div>
+        <div style={{ height:1,background:"#e8eef4",margin:"16px 0 20px" }}/>
+        <div style={{ width:56,height:56,borderRadius:"50%",
+          background:"#f7fafc",border:"1px solid #e2e8f0",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          margin:"0 auto 18px" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="#718096" strokeWidth="1.8" strokeLinecap="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div style={{ fontSize:17,fontWeight:700,color:ICEA_NAVY,marginBottom:10 }}>
+          Demo Period Ended
+        </div>
+        <div style={{ fontSize:13,color:"#718096",lineHeight:1.7,marginBottom:24 }}>
+          This demo has expired.<br/>
+          Contact Coherent to continue.
+        </div>
+        <a href="mailto:sandeep.sharma@coherent.global?subject=ICEA LION Bancassurance Portal - Demo Extension"
+          style={{ textDecoration:"none" }}>
+          <button style={{ width:"100%",padding:"12px",background:ICEA_NAVY,
+            color:"#fff",border:"none",borderRadius:9,fontSize:13,
+            fontWeight:700,cursor:"pointer",letterSpacing:"0.06em",
+            textTransform:"uppercase",fontFamily:"inherit",marginBottom:14 }}>
+            Contact Coherent
+          </button>
+        </a>
+        <div style={{ height:1,background:"#e8eef4",marginBottom:14 }}/>
+        <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:7 }}>
+          <div style={{ fontSize:9,color:"#a0aec0",letterSpacing:"0.08em",textTransform:"uppercase" }}>
+            Powered by
+          </div>
+          <img src="/coherent_logo.png" alt="Coherent"
+            style={{ height:18,objectFit:"contain" }}/>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1269,8 +1324,11 @@ export default function ICEALionBancaPortal() {
   // ── Route to history page ──────────────────────────────────────────────────
   if (page==="history") return <CallHistoryPage onBack={()=>setPage("portal")} bankName={bankConfig.name}/>;
 
+  // ── Demo expiry gate - checked before password ────────────────────────────
+  if (new Date() > DEMO_EXPIRY) return <><Analytics /><ExpiredScreen /></>;
+
   // ── Password gate ──────────────────────────────────────────────────────────
-  if (!unlocked) return <PasswordScreen onUnlock={()=>setUnlocked(true)} bankConfig={bankConfig}/>;
+  if (!unlocked) return <><Analytics /><PasswordScreen onUnlock={()=>setUnlocked(true)} bankConfig={bankConfig}/></>;
 
   // ──────────────────────────────────────────────────────────────────────────
   return (
@@ -1766,6 +1824,7 @@ export default function ICEALionBancaPortal() {
         </div>
       </footer>
 
+      <Analytics />
     </div>
   );
 }
