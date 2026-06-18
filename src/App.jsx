@@ -28,9 +28,9 @@ const BANK_CONFIG = {
   },
   kcb: {
     name:      "KCB Bank Kenya",
-    shortName: "KCB",
+    shortName: "KCB Bank",
     tagline:   "KCB Bank · Bancassurance Portal",
-    logo:      null, // set to "/kcb_logo.png" when available
+    logo:      "/kcb_bank.png",
   },
   cooperative: {
     name:      "Cooperative Bank of Kenya",
@@ -45,10 +45,10 @@ const BANK_CONFIG = {
     logo:      null, // set to "/stanbic_logo.png" when available
   },
   default: {
-    name:      "Equity Bank Kenya",
-    shortName: "Equity Bank",
-    tagline:   "Equity Bank · Bancassurance Portal",
-    logo:      "/equity_logo.png",
+    name:      "KCB Bank Kenya",
+    shortName: "KCB Bank",
+    tagline:   "KCB Bank · Bancassurance Portal",
+    logo:      "/kcb_bank.png",
   },
 };
 function getBankConfig() {
@@ -627,19 +627,19 @@ function CallHistoryPage({ onBack, bankName }) {
 
   const SAMPLE_CALLS = [
     { call_id:"cf836931-e95c-418d-9d88-cad2065018fb", request_timestamp:"2026-06-05T08:42:40Z",
-      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
+      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - KCB Bank Kenya",
       correlation_id:"20260605-Amara-0001", process_time:49, version:"0.3.0", error:null },
     { call_id:"d739564c-3f19-4494-97c8-9fe2e9be4b51", request_timestamp:"2026-06-05T08:43:12Z",
-      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
+      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - KCB Bank Kenya",
       correlation_id:"20260605-Amara-0001", process_time:317, version:"0.3.0", error:null },
     { call_id:"b0b8650a-0488-4e87-aa34-78d3e0090ea5", request_timestamp:"2026-06-05T09:11:05Z",
-      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
+      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - KCB Bank Kenya",
       correlation_id:"20260605-David-0002", process_time:126, version:"0.3.0", error:null },
     { call_id:"469c3e42-6516-4b02-baf8-61233fa8cd19", request_timestamp:"2026-06-05T09:14:38Z",
-      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
+      call_purpose:"Final Quotation", source_system:"Banca Partner Portal - KCB Bank Kenya",
       correlation_id:"20260605-David-0002", process_time:294, version:"0.3.0", error:null },
     { call_id:"7a3f9c12-1234-4567-abcd-ef0123456789", request_timestamp:"2026-06-05T10:02:17Z",
-      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - Equity Bank Kenya",
+      call_purpose:"Get Quotation", source_system:"Banca Partner Portal - KCB Bank Kenya",
       correlation_id:"20260605-Grace-0003", process_time:62, version:"0.3.0", error:null },
   ];
 
