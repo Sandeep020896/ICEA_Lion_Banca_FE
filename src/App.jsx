@@ -322,7 +322,7 @@ function PasswordScreen({ onUnlock, bankConfig }) {
             <>
               <div style={{ width:1,height:40,background:"#e2e8f0" }}/>
               <img src={bankConfig.logo} alt={bankConfig.shortName}
-                style={{ height:52,objectFit:"contain" }}/>
+                style={{ height:60,objectFit:"contain" }}/>
             </>
           )}
         </div>
@@ -1375,9 +1375,9 @@ export default function ICEALionBancaPortal() {
           <img src="/icea_lion_logo.png" alt="ICEA LION" style={{ height:62,objectFit:"contain" }}/>
           {bankConfig.logo && (
             <>
-              <div style={{ width:1,height:58,background:"#e2e8f0" }}/>
+              <div style={{ width:1,height:62,background:"#e2e8f0" }}/>
               <img src={bankConfig.logo} alt={bankConfig.shortName}
-                style={{ height:62,objectFit:"contain" }}/>
+                style={{ height:72,objectFit:"contain" }}/>
             </>
           )}
         </div>
