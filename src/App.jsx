@@ -61,7 +61,7 @@ function getBankConfig() {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const PASSWORD        = "Coherent!";
-const DEMO_EXPIRY     = new Date("2026-06-25"); // Demo expires 25 June 2026 - update to extend
+const DEMO_EXPIRY     = new Date("2026-07-07"); // Demo expires 7 July 2026 - update to extend
 const IDLE_MS         = 30 * 60 * 1000;
 const WARN_MS         = 2  * 60 * 1000;
 const VALIDITY_DAYS   = 90;
